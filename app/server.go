@@ -1,23 +1,32 @@
 package main
 
 import (
-	"fmt"
+	"log/slog"
 	"net"
 	"os"
 )
 
 func main() {
-	fmt.Println("Logs from your program will appear here!")
+	slog.Info("Logs from your program will appear here!")
 
 	l, err := net.Listen("tcp", "0.0.0.0:4221")
 	if err != nil {
-		fmt.Println("Failed to bind to port 4221")
+		slog.Error("Failed to bind to port 4221", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 
-	_, err = l.Accept()
-	if err != nil {
-		fmt.Println("Error accepting connection: ", err.Error())
-		os.Exit(1)
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			slog.Error("Error accepting connection", slog.String("error", err.Error()))
+			os.Exit(1)
+		}
+
+		response := &HttpResponse{Type: Ok}
+		_, err = conn.Write(response.Bytes())
+		if err != nil {
+			slog.Error("Error writing response", slog.String("error", err.Error()))
+		}
+		conn.Close()
 	}
 }
