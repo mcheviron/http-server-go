@@ -1,16 +1,28 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/codecrafters-io/http-server-starter-go/app/request"
 	"github.com/codecrafters-io/http-server-starter-go/app/response"
 	"github.com/codecrafters-io/http-server-starter-go/app/server"
 )
 
 func main() {
+	var directory string
+	args := os.Args
+	for i, arg := range args {
+		if arg == "--directory" && i+1 < len(args) {
+			directory = args[i+1]
+			break
+		}
+	}
+
 	s := server.New("localhost", "4221")
 
 	s.Get("/", func(req request.HttpRequest) response.HttpResponse {
-		return *response.New(response.Ok, nil, nil)
+		return response.New(response.Ok, nil, nil)
 	})
 
 	s.Get("/echo/{str}", func(req request.HttpRequest) response.HttpResponse {
@@ -20,20 +32,44 @@ func main() {
 			Data: []byte(str),
 		}
 		resp := response.New(response.Ok, content, nil)
-		return *resp
+		return resp
 	})
 
 	s.Get("/user-agent", func(req request.HttpRequest) response.HttpResponse {
- 		userAgent := req.Headers["User-Agent"]
- 		content := &response.Content{
- 			Type: response.PlainText,
- 			Data: []byte(userAgent),
- 		}
- 		resp := response.New(response.Ok, content, nil)
- 		return *resp
- 	})
- 
- 
+		userAgent := req.Headers["User-Agent"]
+		content := &response.Content{
+			Type: response.PlainText,
+			Data: []byte(userAgent),
+		}
+		resp := response.New(response.Ok, content, nil)
+		return resp
+	})
+
+	if directory != "" {
+		s.Get("/files/{filename}", func(req request.HttpRequest) response.HttpResponse {
+			filename := req.Params["filename"]
+			filePath := filepath.Join(directory, filename)
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				return response.New(response.NotFound, nil, nil)
+			}
+			content := &response.Content{
+				Type: response.OctetStream,
+				Data: data,
+			}
+			return response.New(response.Ok, content, nil)
+		})
+
+		s.Post("/files/{filename}", func(req request.HttpRequest) response.HttpResponse {
+			filename := req.Params["filename"]
+			filePath := filepath.Join(directory, filename)
+			err := os.WriteFile(filePath, []byte(req.Body), 0644)
+			if err != nil {
+				return response.New(response.NotFound, nil, nil)
+			}
+			return response.New(response.Created, nil, nil)
+		})
+	}
 
 	s.Run()
 }

@@ -57,7 +57,7 @@ func (r *Router) handleRequest(httpRequest request.HttpRequest) response.HttpRes
 			}
 		}
 	}
-	return *response.New(response.NotFound, nil, nil)
+	return response.New(response.NotFound, nil, nil)
 }
 
 func extractParams(path string) []string {

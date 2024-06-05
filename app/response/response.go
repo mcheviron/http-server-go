@@ -38,8 +38,8 @@ type HttpResponse struct {
 	Encoding *Encoding
 }
 
-func New(responseType ResponseType, content *Content, encoding *Encoding) *HttpResponse {
-	return &HttpResponse{
+func New(responseType ResponseType, content *Content, encoding *Encoding) HttpResponse {
+	return HttpResponse{
 		Type:     responseType,
 		Content:  content,
 		Encoding: encoding,
