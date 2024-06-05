@@ -12,6 +12,7 @@ const (
 	Ok ResponseType = iota
 	Created
 	NotFound
+	InternalServerError
 )
 
 type ContentType int

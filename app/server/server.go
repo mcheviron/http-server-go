@@ -131,26 +131,25 @@ func (s *Server) handleConnection(conn net.Conn) {
 	defer conn.Close()
 
 	buf := make([]byte, 1024)
-	_, err := conn.Read(buf)
+	readBytes, err := conn.Read(buf)
 	if err != nil {
-		slog.Error("Error reading request", slog.String("error", err.Error()))
 		return
 	}
 
-	httpRequest, err := request.New(buf)
+	httpRequest, err := request.New(buf[:readBytes])
 	if err != nil {
-		slog.Error("Error parsing request", slog.String("error", err.Error()))
 		httpResponse := response.New(response.NotFound, nil, nil)
 		_, err = conn.Write(httpResponse.Bytes())
 		if err != nil {
-			slog.Error("Error writing response", slog.String("error", err.Error()))
+			return
 		}
 		return
 	}
 
 	httpResponse := s.handleRequest(*httpRequest)
+
 	_, err = conn.Write(httpResponse.Bytes())
 	if err != nil {
-		slog.Error("Error writing response", slog.String("error", err.Error()))
+		return
 	}
 }
