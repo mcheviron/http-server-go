@@ -23,5 +23,17 @@ func main() {
 		return *resp
 	})
 
+	s.Get("/user-agent", func(req request.HttpRequest) response.HttpResponse {
+ 		userAgent := req.Headers["User-Agent"]
+ 		content := &response.Content{
+ 			Type: response.PlainText,
+ 			Data: []byte(userAgent),
+ 		}
+ 		resp := response.New(response.Ok, content, nil)
+ 		return *resp
+ 	})
+ 
+ 
+
 	s.Run()
 }
