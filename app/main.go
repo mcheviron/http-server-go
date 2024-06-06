@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/codecrafters-io/http-server-starter-go/app/request"
 	"github.com/codecrafters-io/http-server-starter-go/app/response"
@@ -22,7 +23,7 @@ func main() {
 	s := server.New("localhost", "4221")
 
 	s.Get("/", func(req request.HttpRequest) response.HttpResponse {
-		return response.New(response.Ok, nil, nil)
+		return response.New(response.Ok, nil, response.None)
 	})
 
 	s.Get("/echo/{str}", func(req request.HttpRequest) response.HttpResponse {
@@ -31,7 +32,11 @@ func main() {
 			Type: response.PlainText,
 			Data: []byte(str),
 		}
-		resp := response.New(response.Ok, content, nil)
+		encoding := response.None
+		if strings.Contains(req.Headers["Accept-Encoding"], "gzip") {
+			encoding = response.Gzip
+		}
+		resp := response.New(response.Ok, content, encoding)
 		return resp
 	})
 
@@ -41,7 +46,7 @@ func main() {
 			Type: response.PlainText,
 			Data: []byte(userAgent),
 		}
-		resp := response.New(response.Ok, content, nil)
+		resp := response.New(response.Ok, content, response.None)
 		return resp
 	})
 
@@ -51,13 +56,13 @@ func main() {
 			filePath := filepath.Join(directory, filename)
 			data, err := os.ReadFile(filePath)
 			if err != nil {
-				return response.New(response.NotFound, nil, nil)
+				return response.New(response.NotFound, nil, response.None)
 			}
 			content := &response.Content{
 				Type: response.OctetStream,
 				Data: data,
 			}
-			return response.New(response.Ok, content, nil)
+			return response.New(response.Ok, content, response.None)
 		})
 
 		s.Post("/files/{filename}", func(req request.HttpRequest) response.HttpResponse {
@@ -65,9 +70,9 @@ func main() {
 			filePath := filepath.Join(directory, filename)
 			err := os.WriteFile(filePath, []byte(req.Body), 0644)
 			if err != nil {
-				return response.New(response.NotFound, nil, nil)
+				return response.New(response.NotFound, nil, response.None)
 			}
-			return response.New(response.Created, nil, nil)
+			return response.New(response.Created, nil, response.None)
 		})
 	}
 

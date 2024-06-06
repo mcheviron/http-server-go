@@ -25,7 +25,8 @@ const (
 type Encoding int
 
 const (
-	Gzip Encoding = iota
+	None Encoding = iota
+	Gzip
 )
 
 type Content struct {
@@ -36,10 +37,10 @@ type Content struct {
 type HttpResponse struct {
 	Type     ResponseType
 	Content  *Content
-	Encoding *Encoding
+	Encoding Encoding
 }
 
-func New(responseType ResponseType, content *Content, encoding *Encoding) HttpResponse {
+func New(responseType ResponseType, content *Content, encoding Encoding) HttpResponse {
 	return HttpResponse{
 		Type:     responseType,
 		Content:  content,
@@ -78,7 +79,7 @@ func (r *HttpResponse) Bytes() []byte {
 
 func (r *HttpResponse) writeBody(buf *bytes.Buffer) {
 	var body []byte
-	if r.Encoding != nil && *r.Encoding == Gzip {
+	if r.Encoding == Gzip {
 		buf.WriteString("Content-Encoding: gzip\r\n")
 		var compressedData bytes.Buffer
 		gzipWriter := gzip.NewWriter(&compressedData)

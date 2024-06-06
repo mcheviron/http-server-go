@@ -57,7 +57,7 @@ func (r *Router) handleRequest(httpRequest request.HttpRequest) response.HttpRes
 			}
 		}
 	}
-	return response.New(response.NotFound, nil, nil)
+	return response.New(response.NotFound, nil, response.None)
 }
 
 func extractParams(path string) []string {
@@ -138,7 +138,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 	httpRequest, err := request.New(buf[:readBytes])
 	if err != nil {
-		httpResponse := response.New(response.NotFound, nil, nil)
+		httpResponse := response.New(response.NotFound, nil, response.None)
 		_, err = conn.Write(httpResponse.Bytes())
 		if err != nil {
 			return
